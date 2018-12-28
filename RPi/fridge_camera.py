@@ -3,6 +3,8 @@ import cv2
 import time
 import datetime
 
+import config
+
 OPTIMAL_DOOR_ANGLE = 45
 DOOR_ANGLE_TOLERANCE = 5
 
@@ -71,11 +73,10 @@ class ImageUploader:
 fridgeDoor = FridgeDoor()
 fridgeCamera = FridgeCamera(0)
 uploader = ImageUploader(
-        'ftp.gransta.se',
-        'gransta.se',
-        '#PgqyOGM',
-        '/fridge')
-
+    config.FTP_HOST,
+    config.FTP_USER,
+    config.FTP_PASS,
+    config.FTP_PATH)
 
 while(1):
     fridgeDoor.updateAngle()
