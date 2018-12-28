@@ -31,7 +31,7 @@ class FridgeImage:
 
 fridgeDoor = FridgeDoor()
 fridgeImgList = []
-camera = cv2.VideoCapture(1)
+camera = cv2.VideoCapture(0)
 hasUnsentImage = False
 
 while(1):
@@ -42,7 +42,7 @@ while(1):
         # No need to use list?
         fridgeImgList.append(newImage)
         hasUnsentImage = True
-    elif(fridgeDoor.isClosed() and hasUnsentImage):
+    elif(fridgeDoor.isClosed() and hasUnsentImage): #Wait until door is closed to send image
         img = fridgeImgList[-1]
 
         cv2.imwrite(img.getFilename(), img.image)
