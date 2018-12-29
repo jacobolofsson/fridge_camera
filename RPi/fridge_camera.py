@@ -33,8 +33,9 @@ class FridgeImage:
         return 'fridge_' + self.timestamp.strftime('%Y-%m-%d %H:%M:%S') + '.png' 
 
 class FridgeCamera:
-    def __init__(self, camID):
+    def __init__(self, camID, imageFolderPath):
         self.camera = cv2.VideoCapture(camID)
+        self.imgFolder = imageFolderPath
         self.imageList = []
         self.hasUnstoredImg = False
     def takePicture(self, angle):
@@ -44,10 +45,10 @@ class FridgeCamera:
     def storePictureAsFile(self):
         # The last image in the list is always the latest
         tempImg = self.imageList[-1]
-        cv2.imwrite(tempImg.getFilename(), tempImg.image)
+        cv2.imwrite(self.imgFolder + tempImg.getFilename(), tempImg.image)
         del self.imageList[:]
         self.hasUnstoredImg = False
-        return tempImg.getFilename()
+        return self.imgFolder, tempImg.getFilename()
     def hasUnstoredPicture(self):
         return self.hasUnstoredImg
 
@@ -57,13 +58,13 @@ class ImageUploader:
         self.user = user
         self.passwd = passwd
         self.path = path
-    def upload(self, filename):
+    def upload(self, filepath, filename):
         # Open and close FTP connection for each transfer.
         # Might be a long time between transmissions.
         ftps = ftplib.FTP(host=self.host)
         ftps.login(user=self.user, passwd=self.passwd)
         ftps.cwd(self.path)
-        image_fd = open(filename, 'rb');
+        image_fd = open(filepath + filename, 'rb');
         # Use same file name at destination as source
         ftps.storbinary('STOR ' + filename, image_fd);
         image_fd.close()
@@ -71,7 +72,7 @@ class ImageUploader:
 
 ### START OF SCRPIT ###
 fridgeDoor = FridgeDoor()
-fridgeCamera = FridgeCamera(0)
+fridgeCamera = FridgeCamera(0, 'images/')
 uploader = ImageUploader(
     config.FTP_HOST,
     config.FTP_USER,
@@ -84,8 +85,8 @@ while(1):
         fridgeCamera.takePicture(fridgeDoor.getAngle())
     # Wait until door is closed to send image, to prevent unnecesary uploads
     elif(fridgeDoor.isClosed() and fridgeCamera.hasUnstoredPicture()): 
-        filename = fridgeCamera.storePictureAsFile()
-        uploader.upload(filename)
+        path, filename = fridgeCamera.storePictureAsFile()
+        uploader.upload(path, filename)
 
     time.sleep(0.5)
 
