@@ -30,7 +30,7 @@ class FridgeImage:
         self.timestamp = datetime.datetime.now()
         self.doorAngle = doorAngle
     def getFilename(self):
-        return 'fridge_' + self.timestamp.strftime('%Y-%m-%d %H:%M:%S') + '.png' 
+        return 'fridge_' + self.timestamp.strftime('%Y-%m-%d %H%M%S') + '.png' 
 
 class FridgeCamera:
     def __init__(self, camID, imageFolderPath):
