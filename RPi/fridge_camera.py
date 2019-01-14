@@ -3,13 +3,31 @@ import cv2
 import time
 import datetime
 
+import board
+import busio
+import adafruit_ads1x15.ads1115 as ADS
+from adafruit_ads1x15.analog_in import AnalogIn
+
+MAX_ANGLE = 90
+MAX_SENSOR_VAL = 20000
+MIN_SENSOR_VAL = 10000
+def valueToAngle(value):
+    return (value-MIN_SENSOR_VAL)*MAX_ANGLE/(MAX_SENSOR_VAL - MIN_SENSOR_VAL)
+
+class DoorSensor():
+    def __init__(self):
+        i2c = busio.I2C(board.SCL, board.SDA)
+        self.sensor = ADS.ADS1115(i2c)
+    def readAngle(self):
+        chan = AnalogIn(self.sensor, ADS.P0)
+        return valueToAngle(chan.value)
+
+
+# import FTP config from external file
 import config
 
 OPTIMAL_DOOR_ANGLE = 45
 DOOR_ANGLE_TOLERANCE = 5
-
-def readAngleSensor():
-    return int(input('Enter door angle:'))
 
 class FridgeDoor:
     def __init__(self):
@@ -19,8 +37,8 @@ class FridgeDoor:
     def isInView(self):
         # Compare squares instead of abs to skip sqrt operation
         return (self.angle-OPTIMAL_DOOR_ANGLE)**2 < DOOR_ANGLE_TOLERANCE**2
-    def updateAngle(self):
-        self.angle = readAngleSensor()
+    def updateAngle(self, angle):
+        self.angle = angle
     def getAngle(self):
         return self.angle
 
@@ -72,6 +90,7 @@ class ImageUploader:
 
 ### START OF SCRPIT ###
 fridgeDoor = FridgeDoor()
+doorSensor = DoorSensor()
 fridgeCamera = FridgeCamera(0, 'images/')
 uploader = ImageUploader(
     config.FTP_HOST,
@@ -80,7 +99,7 @@ uploader = ImageUploader(
     config.FTP_PATH)
 
 while(1):
-    fridgeDoor.updateAngle()
+    fridgeDoor.updateAngle(doorSensor.readAngle())
     if(fridgeDoor.isInView()):
         fridgeCamera.takePicture(fridgeDoor.getAngle())
     # Wait until door is closed to send image, to prevent unnecesary uploads
