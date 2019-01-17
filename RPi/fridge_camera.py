@@ -20,7 +20,9 @@ class DoorSensor():
         self.sensor = ADS.ADS1115(i2c)
     def readAngle(self):
         chan = AnalogIn(self.sensor, ADS.P0)
-        return valueToAngle(chan.value)
+        angle = valueToAngle(chan.value)
+        print("Angle: ", angle, "Value:", chan.value)
+        return angle
 
 
 # import FTP config from external file
@@ -28,12 +30,13 @@ import config
 
 OPTIMAL_DOOR_ANGLE = 45
 DOOR_ANGLE_TOLERANCE = 5
+DOOR_CLOSED_ANGLE = 10
 
 class FridgeDoor:
     def __init__(self):
         self.angle = 0
     def isClosed(self):
-        return self.angle <= 0
+        return self.angle <= DOOR_CLOSED_ANGLE
     def isInView(self):
         # Compare squares instead of abs to skip sqrt operation
         return (self.angle-OPTIMAL_DOOR_ANGLE)**2 < DOOR_ANGLE_TOLERANCE**2
@@ -54,19 +57,19 @@ class FridgeCamera:
     def __init__(self, camID, imageFolderPath):
         self.camera = cv2.VideoCapture(camID)
         self.imgFolder = imageFolderPath
-        self.imageList = []
         self.hasUnstoredImg = False
+        
     def takePicture(self, angle):
         tmp, frame = self.camera.read()
-        self.imageList.append(FridgeImage(frame, angle))
+        self.currentImage = FridgeImage(frame, angle)
         self.hasUnstoredImg = True
+
     def storePictureAsFile(self):
         # The last image in the list is always the latest
-        tempImg = self.imageList[-1]
-        cv2.imwrite(self.imgFolder + tempImg.getFilename(), tempImg.image)
-        del self.imageList[:]
+        cv2.imwrite(self.imgFolder + self.currentImage.getFilename(), self.currentImage.image)
         self.hasUnstoredImg = False
-        return self.imgFolder, tempImg.getFilename()
+        return self.imgFolder, self.currentImage.getFilename()
+
     def hasUnstoredPicture(self):
         return self.hasUnstoredImg
 
@@ -102,10 +105,12 @@ while(1):
     fridgeDoor.updateAngle(doorSensor.readAngle())
     if(fridgeDoor.isInView()):
         fridgeCamera.takePicture(fridgeDoor.getAngle())
+        print("Taking picture")
     # Wait until door is closed to send image, to prevent unnecesary uploads
     elif(fridgeDoor.isClosed() and fridgeCamera.hasUnstoredPicture()): 
         path, filename = fridgeCamera.storePictureAsFile()
         uploader.upload(path, filename)
+        print("Uploading picture")
 
     time.sleep(0.5)
 
