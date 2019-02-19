@@ -9,8 +9,9 @@ import adafruit_ads1x15.ads1115 as ADS
 from adafruit_ads1x15.analog_in import AnalogIn
 
 MAX_ANGLE = 90
-MAX_SENSOR_VAL = 20000
-MIN_SENSOR_VAL = 10000
+MAX_SENSOR_VAL = 12730
+MIN_SENSOR_VAL = 12100
+
 def valueToAngle(value):
     return (value-MIN_SENSOR_VAL)*MAX_ANGLE/(MAX_SENSOR_VAL - MIN_SENSOR_VAL)
 
@@ -28,15 +29,15 @@ class DoorSensor():
 # import FTP config from external file
 import config
 
-OPTIMAL_DOOR_ANGLE = 45
+OPTIMAL_DOOR_ANGLE = 5
 DOOR_ANGLE_TOLERANCE = 5
-DOOR_CLOSED_ANGLE = 10
+DOOR_CLOSED_ANGLE = 60
 
 class FridgeDoor:
     def __init__(self):
         self.angle = 0
     def isClosed(self):
-        return self.angle <= DOOR_CLOSED_ANGLE
+        return self.angle >= DOOR_CLOSED_ANGLE
     def isInView(self):
         # Compare squares instead of abs to skip sqrt operation
         return (self.angle-OPTIMAL_DOOR_ANGLE)**2 < DOOR_ANGLE_TOLERANCE**2
@@ -112,6 +113,6 @@ while(1):
         uploader.upload(path, filename)
         print("Uploading picture")
 
-    time.sleep(0.5)
+    time.sleep(0.1)
 
 camera.release()
