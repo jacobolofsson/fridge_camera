@@ -7,5 +7,6 @@ setuptools.setup(
     author='Jacob Olofsson',
     author_email='jacob@jacobolofsson.se',
     description='I want to be able to check the content of my fridge online',
-    packages=find_packages(),
+    packages=setuptools.find_packages(),
+    install_requires=["cv2-tools"],
 )
