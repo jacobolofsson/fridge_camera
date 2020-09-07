@@ -1,17 +1,11 @@
-import ftplib
 import cv2
 import time
 import datetime
 
-import config
-
 OPTIMAL_DOOR_ANGLE = 45
 DOOR_ANGLE_TOLERANCE = 5
 
-def readAngleSensor():
-    return int(input('Enter door angle:'))
-
-class FridgeDoor:
+class Door:
     def __init__(self):
         self.angle = 0
     def isClosed(self):
@@ -24,7 +18,7 @@ class FridgeDoor:
     def getAngle(self):
         return self.angle
 
-class FridgeImage:
+class Image:
     def __init__(self, image, doorAngle):
         self.image = image
         self.timestamp = datetime.datetime.now()
@@ -32,7 +26,7 @@ class FridgeImage:
     def getFilename(self):
         return 'fridge_' + self.timestamp.strftime('%Y-%m-%d %H%M%S') + '.png' 
 
-class FridgeCamera:
+class Camera:
     def __init__(self, camID, imageFolderPath):
         self.camera = cv2.VideoCapture(camID)
         self.imgFolder = imageFolderPath
@@ -51,43 +45,3 @@ class FridgeCamera:
         return self.imgFolder, tempImg.getFilename()
     def hasUnstoredPicture(self):
         return self.hasUnstoredImg
-
-class ImageUploader:
-    def __init__(self, host, user, passwd, path):
-        self.host = host
-        self.user = user
-        self.passwd = passwd
-        self.path = path
-    def upload(self, filepath, filename):
-        # Open and close FTP connection for each transfer.
-        # Might be a long time between transmissions.
-        ftps = ftplib.FTP(host=self.host)
-        ftps.login(user=self.user, passwd=self.passwd)
-        ftps.cwd(self.path)
-        image_fd = open(filepath + filename, 'rb');
-        # Use same file name at destination as source
-        ftps.storbinary('STOR ' + filename, image_fd);
-        image_fd.close()
-        ftps.quit()
-
-### START OF SCRPIT ###
-fridgeDoor = FridgeDoor()
-fridgeCamera = FridgeCamera(0, 'images/')
-uploader = ImageUploader(
-    config.FTP_HOST,
-    config.FTP_USER,
-    config.FTP_PASS,
-    config.FTP_PATH)
-
-while(1):
-    fridgeDoor.updateAngle()
-    if(fridgeDoor.isInView()):
-        fridgeCamera.takePicture(fridgeDoor.getAngle())
-    # Wait until door is closed to send image, to prevent unnecesary uploads
-    elif(fridgeDoor.isClosed() and fridgeCamera.hasUnstoredPicture()): 
-        path, filename = fridgeCamera.storePictureAsFile()
-        uploader.upload(path, filename)
-
-    time.sleep(0.5)
-
-camera.release()
