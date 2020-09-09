@@ -8,5 +8,5 @@ setuptools.setup(
     author_email='jacob@jacobolofsson.se',
     description='I want to be able to check the content of my fridge online',
     packages=setuptools.find_packages(),
-    install_requires=["cv2-tools"],
+    install_requires=["opencv-python"],
 )
