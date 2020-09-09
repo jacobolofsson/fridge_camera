@@ -23,8 +23,9 @@ class Door:
         return self.angle >= DOOR_CLOSED_ANGLE
 
     def isInView(self) -> bool:
-        # Compare squares instead of abs to skip sqrt operation
-        return (self.angle - OPTIMAL_DOOR_ANGLE)**2 < DOOR_ANGLE_TOLERANCE**2
+        diff = abs(self.angle - OPTIMAL_DOOR_ANGLE)
+        self.logger.debug(f"Diff: {diff} Tolerance: {DOOR_ANGLE_TOLERANCE}")
+        return diff < DOOR_ANGLE_TOLERANCE
 
     def updateAngle(self) -> None:
         self.angle = self.sensor.readAngle()
@@ -38,6 +39,10 @@ class Image:
         self.image = image
         self.timestamp = datetime.datetime.now()
         self.doorAngle = doorAngle
+        logging.getLogger(__name__).info(
+            f"Creating image at angle: {doorAngle} with "
+            f"timestamp: {self.timestamp}",
+        )
 
     def getFilename(self) -> str:
         return 'fridge_' + self.timestamp.strftime('%Y-%m-%d %H%M%S') + '.png'
@@ -48,14 +53,17 @@ class Camera:
         self.camera = cv2.VideoCapture(camID)
         self.imgFolder = imageFolderPath
         self.hasUnstoredImg = False
+        self.logger = logging.getLogger(__name__)
 
     def takePicture(self, angle: int) -> None:
+        self.logger.info("Taking picture")
         _, frame = self.camera.read()
         self.currentImage = Image(frame, angle)
         self.hasUnstoredImg = True
 
     def storePictureAsFile(self) -> Tuple[str, str]:
         # The last image in the list is always the latest
+        self.logger.info("Storing picture as file")
         cv2.imwrite(
             self.imgFolder +
             self.currentImage.getFilename(),
