@@ -1,4 +1,5 @@
 import argparse
+import logging
 import sys
 import time
 
@@ -8,6 +9,13 @@ import fridgecamera.uploader as uploader
 
 def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        help="Make logging more verbose",
+        action="store_true",
+        default=False,
+    )
     parser.add_argument(
         "-p",
         "--imgpath",
@@ -20,9 +28,7 @@ def parse_arguments() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def main() -> int:
-    args = parse_arguments()
-
+def serve_forever(args: argparse.Namespace) -> None:
     fridgeDoor = fridge.Door()
     fridgeCamera = fridge.Camera(args.camid, args.imgpath)
     imgUploader = uploader.Uploader(
@@ -43,6 +49,23 @@ def main() -> int:
             imgUploader.upload(path, filename)
 
         time.sleep(1 / args.fps)
+
+
+def main() -> int:
+    args = parse_arguments()
+    logger = logging.getLogger("fridgecamera")
+    logger.addHandler(logging.StreamHandler())
+    logger.setLevel(
+        logging.DEBUG if args.verbose else logging.INFO
+    )
+    logger.info("Starting fridge camera")
+    try:
+        serve_forever(args)
+    except Exception:
+        logger.exception("An unexpected exception occurend!")
+        return -1
+
+    logger.info("Shutting down fridge camera")
     return 0
 
 

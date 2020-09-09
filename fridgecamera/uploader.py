@@ -1,15 +1,20 @@
 import ftplib
+import logging
 import os
 
 
 class Uploader:
     def __init__(self, host: str, user: str, passwd: str, path: str) -> None:
+        self.logger = logging.getLogger(__name__)
         self.host = host
         self.user = user
         self.passwd = passwd
         self.path = path
 
     def upload(self, filepath: str, filename: str) -> None:
+        self.logger.info(
+            f"Uploading to path: '{filepath}', filename: '{filename}'"
+        )
         # Open and close FTP connection for each transfer.
         # Might be a long time between transmissions.
         ftps = ftplib.FTP(host=self.host)

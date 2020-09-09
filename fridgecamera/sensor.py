@@ -1,3 +1,5 @@
+import logging
+
 import adafruit_ads1x15.ads1115 as ADS
 import board
 import busio
@@ -15,11 +17,12 @@ def valueToAngle(value: int) -> float:
 
 class Sensor():
     def __init__(self) -> None:
+        self.logger = logging.getLogger(__name__)
         i2c = busio.I2C(board.SCL, board.SDA)
         self.sensor = ADS.ADS1115(i2c)
 
     def readAngle(self) -> float:
         chan = AnalogIn(self.sensor, ADS.P0)
         angle = valueToAngle(chan.value)
-        print("Angle: ", angle, "Value:", chan.value)
+        self.logger.debug("Angle: ", angle, "Value:", chan.value)
         return angle
