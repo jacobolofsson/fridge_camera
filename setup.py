@@ -9,7 +9,10 @@ setuptools.setup(
     description='I want to be able to check the content of my fridge online',
     packages=setuptools.find_packages(),
     install_requires=["opencv-python"],
-    entry_points={
-        'console_scripts': ['fridgecamera=fridgecamera.__main__:main'],
-    },
+    extras_require={"hardware_access": [
+        "adafruit-circuitpython-ads1x15",
+    ]},
+    entry_points={"console_scripts": [
+        "fridgecamera=fridgecamera.__main__:main",
+    ]},
 )
