@@ -1,28 +1,30 @@
 import logging
 
-import adafruit_ads1x15.ads1115 as ADS
 import board
 import busio
+from adafruit_ads1x15.ads1115 import ADS1115, P0
 from adafruit_ads1x15.analog_in import AnalogIn
 
 MAX_ANGLE = 90
-MAX_SENSOR_VAL = 12730
-MIN_SENSOR_VAL = 12100
-
-
-def valueToAngle(value: int) -> float:
-    return (value - MIN_SENSOR_VAL) * MAX_ANGLE / \
-        (MAX_SENSOR_VAL - MIN_SENSOR_VAL)
 
 
 class Sensor():
-    def __init__(self) -> None:
+    def __init__(self, min_sensor_val: int, max_sensor_val: int) -> None:
+        self._min_sensor_val = min_sensor_val
+        self._max_sensor_val = max_sensor_val
+        self._max_angle = MAX_ANGLE
+
         self.logger = logging.getLogger(__name__)
         i2c = busio.I2C(board.SCL, board.SDA)
-        self.sensor = ADS.ADS1115(i2c)
+        self.sensor = ADS1115(i2c)
 
     def readAngle(self) -> float:
-        chan = AnalogIn(self.sensor, ADS.P0)
-        angle = valueToAngle(chan.value)
-        self.logger.debug("Angle: ", angle, "Value:", chan.value)
+        chan = AnalogIn(self.sensor, P0)
+        angle = self._valueToAngle(chan.value)
+        self.logger.debug(f"Angle: {angle} Value: {chan.value}")
         return angle
+
+    def _valueToAngle(self, value: int) -> float:
+        shifted = (value - self._min_sensor_val)
+        normalized = shifted / (self._max_sensor_val - self._min_sensor_val)
+        return normalized * self._max_angle

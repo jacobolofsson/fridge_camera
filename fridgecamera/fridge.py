@@ -15,7 +15,7 @@ DOOR_CLOSED_ANGLE = 60
 class Door:
     def __init__(self) -> None:
         self.angle = 0.0
-        self.sensor = Sensor()
+        self.sensor = Sensor(12100, 12730)
         self.logger = logging.getLogger(__name__)
 
     def isClosed(self) -> bool:

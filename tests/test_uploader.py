@@ -1,6 +1,7 @@
-import pytest
 import os
 from unittest.mock import patch
+
+import pytest
 
 from fridgecamera.uploader import Uploader
 
