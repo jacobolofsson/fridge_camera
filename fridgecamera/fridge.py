@@ -1,5 +1,6 @@
 import datetime
 import logging
+import os
 from typing import TYPE_CHECKING, Tuple
 
 import cv2
@@ -66,8 +67,10 @@ class Camera:
         # The last image in the list is always the latest
         self.logger.info("Storing picture as file")
         cv2.imwrite(
-            self.imgFolder +
-            self.currentImage.getFilename(),
+            os.path.join(
+                self.imgFolder,
+                self.currentImage.getFilename(),
+            ),
             self.currentImage.image)
         self.hasUnstoredImg = False
         return self.imgFolder, self.currentImage.getFilename()
