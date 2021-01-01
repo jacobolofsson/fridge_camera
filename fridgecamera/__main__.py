@@ -4,6 +4,7 @@ import sys
 import time
 
 import fridgecamera.fridge as fridge
+import fridgecamera.sensor as sensor
 import fridgecamera.uploader as uploader
 
 
@@ -29,7 +30,7 @@ def parse_arguments() -> argparse.Namespace:
 
 
 def serve_forever(args: argparse.Namespace) -> None:
-    fridgeDoor = fridge.Door()
+    fridgeDoor = fridge.Door(sensor.Sensor(12100, 12730))
     fridgeCamera = fridge.Camera(args.camid, args.imgpath)
     imgUploader = uploader.Uploader(
         args.FTP_HOST,
@@ -61,6 +62,8 @@ def main() -> int:
     logger.info("Starting fridge camera")
     try:
         serve_forever(args)
+    except KeyboardInterrupt:
+        logger.info("Ctrl-C received")
     except Exception:
         logger.exception("An unexpected exception occurend!")
         return -1

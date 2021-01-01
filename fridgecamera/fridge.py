@@ -1,11 +1,12 @@
 import datetime
 import logging
-from typing import Tuple
+from typing import TYPE_CHECKING, Tuple
 
 import cv2
 import numpy
 
-from fridgecamera.sensor import Sensor
+if TYPE_CHECKING:
+    from fridgecamera.sensor import Sensor
 
 OPTIMAL_DOOR_ANGLE = 5
 DOOR_ANGLE_TOLERANCE = 5
@@ -13,9 +14,9 @@ DOOR_CLOSED_ANGLE = 60
 
 
 class Door:
-    def __init__(self) -> None:
+    def __init__(self, sensor: "Sensor") -> None:
         self.angle = 0.0
-        self.sensor = Sensor(12100, 12730)
+        self.sensor = sensor
         self.logger = logging.getLogger(__name__)
 
     def isClosed(self) -> bool:
