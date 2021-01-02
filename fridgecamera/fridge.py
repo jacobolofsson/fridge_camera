@@ -1,11 +1,13 @@
 import datetime
 import logging
-from typing import Tuple
+import os
+from typing import TYPE_CHECKING, Tuple
 
 import cv2
 import numpy
 
-from fridgecamera.sensor import Sensor
+if TYPE_CHECKING:
+    from fridgecamera.sensor import Sensor
 
 OPTIMAL_DOOR_ANGLE = 5
 DOOR_ANGLE_TOLERANCE = 5
@@ -13,9 +15,9 @@ DOOR_CLOSED_ANGLE = 60
 
 
 class Door:
-    def __init__(self) -> None:
+    def __init__(self, sensor: "Sensor") -> None:
         self.angle = 0.0
-        self.sensor = Sensor()
+        self.sensor = sensor
         self.logger = logging.getLogger(__name__)
 
     def isClosed(self) -> bool:
@@ -65,8 +67,10 @@ class Camera:
         # The last image in the list is always the latest
         self.logger.info("Storing picture as file")
         cv2.imwrite(
-            self.imgFolder +
-            self.currentImage.getFilename(),
+            os.path.join(
+                self.imgFolder,
+                self.currentImage.getFilename(),
+            ),
             self.currentImage.image)
         self.hasUnstoredImg = False
         return self.imgFolder, self.currentImage.getFilename()
