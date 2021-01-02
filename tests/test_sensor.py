@@ -1,6 +1,6 @@
-from unittest.mock import MagicMock, patch
-
 import pytest
+
+from fridgecamera.sensor import Sensor
 
 MIN_VAL = 12100
 MAX_VAL = 12730
@@ -9,18 +9,7 @@ MID_VAL = MIN_VAL + (MAX_VAL-MIN_VAL)/2
 
 @pytest.fixture()
 def sensor():
-    with patch.dict(
-        "sys.modules",
-        {
-            "board": MagicMock(),
-            "busio": MagicMock(),
-            "adafruit_ads1x15": MagicMock(),
-            "adafruit_ads1x15.ads1115": MagicMock(),
-            "adafruit_ads1x15.analog_in": MagicMock(),
-        }
-    ):
-        from fridgecamera.sensor import Sensor
-        yield Sensor(MIN_VAL, MAX_VAL)
+    return Sensor(MIN_VAL, MAX_VAL)
 
 
 @pytest.mark.parametrize(("analog_val", "expected_angle"), [
