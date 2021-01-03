@@ -1,4 +1,6 @@
 import logging
+import os
+from tempfile import gettempdir
 from typing import List
 
 from fridgecamera.configuration import parse_arguments
@@ -16,7 +18,7 @@ def main(str_args: List[str]) -> int:
 
     worker = Worker(
         args.camid,
-        args.imgpath,
+        os.path.join(gettempdir(), ".fridgecamera"),
         {
             "host": args.ftp_host,
             "user": args.ftp_user,

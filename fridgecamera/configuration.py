@@ -11,12 +11,6 @@ def parse_arguments(args: List[str]) -> argparse.Namespace:
         action="store_true",
         default=False,
     )
-    parser.add_argument(
-        "-p",
-        "--imgpath",
-        help="Path for images",
-        default="images/",
-    )
     parser.add_argument("--camid", type=int, help="Camera ID", default=0)
     parser.add_argument("--fps", type=int,
                         help="Images taken per second", default=2)
