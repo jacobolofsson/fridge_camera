@@ -3,12 +3,12 @@ import os
 from tempfile import gettempdir
 from typing import List
 
-from fridgecamera.configuration import parse_arguments
+from fridgecamera.configuration import get_config
 from fridgecamera.worker import Worker
 
 
 def main(str_args: List[str]) -> int:
-    args = parse_arguments(str_args)
+    args = get_config(str_args)
 
     logger = logging.getLogger("fridgecamera")
     logger.addHandler(logging.StreamHandler())

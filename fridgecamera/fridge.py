@@ -65,15 +65,16 @@ class Camera:
 
     def storePictureAsFile(self) -> Tuple[str, str]:
         # The last image in the list is always the latest
-        self.logger.info("Storing picture as file")
+        imgname = self.currentImage.getFilename()
+        self.logger.info(f"Storing picture {imgname} at: {self.imgFolder}")
         cv2.imwrite(
             os.path.join(
                 self.imgFolder,
-                self.currentImage.getFilename(),
+                imgname,
             ),
             self.currentImage.image)
         self.hasUnstoredImg = False
-        return self.imgFolder, self.currentImage.getFilename()
+        return self.imgFolder, imgname
 
     def hasUnstoredPicture(self) -> bool:
         return self.hasUnstoredImg
