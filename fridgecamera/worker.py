@@ -1,5 +1,5 @@
 import time
-from typing import Dict
+from typing import Dict, Tuple
 
 from fridgecamera.fridge import Camera, Door
 from fridgecamera.sensor import Sensor
@@ -11,10 +11,11 @@ class Worker:
         self,
         camid: int,
         imgpath: str,
+        sensor_config: Tuple[int, int],
         ftp_details: Dict[str, str],
         fps: int
     ) -> None:
-        self.door = Door(Sensor(12100, 12730))
+        self.door = Door(Sensor(*sensor_config))
         self.camera = Camera(camid, imgpath)
         self.uploader = Uploader(
             ftp_details["host"],

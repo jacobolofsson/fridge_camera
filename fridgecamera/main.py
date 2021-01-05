@@ -20,6 +20,7 @@ def main(str_args: List[str]) -> int:
     worker = Worker(
         args.camid,
         os.path.join(gettempdir(), ".fridgecamera"),
+        (args.sensor_min, args.sensor_max),
         {
             "host": args.ftp_host,
             "user": args.ftp_user,

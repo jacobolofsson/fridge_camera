@@ -36,6 +36,11 @@ def parse_arguments(
     _add_config_argument("ftp_path", type=str, default=None,
                          help="Path on FTP host to save the images at")
 
+    _add_config_argument("sensor_min", type=int, default=12100,
+                         help="Sensor value for 0 degree door angle")
+    _add_config_argument("sensor_max", type=int, default=12800,
+                         help="Sensor value for 90 degree door angle")
+
     parsed = parser.parse_args(args)
     logging.getLogger(__name__).debug(
         f"Got from command line ({args}): {parsed}")
