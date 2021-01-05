@@ -1,5 +1,6 @@
 import logging
 import os
+from pathlib import Path
 from tempfile import gettempdir
 from typing import List
 
@@ -8,7 +9,7 @@ from fridgecamera.worker import Worker
 
 
 def main(str_args: List[str]) -> int:
-    args = get_config(str_args)
+    args = get_config(str_args, Path.home() / "fridgecamera.ini")
 
     logger = logging.getLogger("fridgecamera")
     logger.addHandler(logging.StreamHandler())

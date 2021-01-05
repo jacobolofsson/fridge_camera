@@ -58,6 +58,12 @@ def test_parse_args() -> None:
     assert vars(args) == expected
 
 
+def test_no_config_file(tmp_path) -> None:
+    non_existing_file_path = tmp_path / "fridgecamera.ini"
+    args = get_config([], non_existing_file_path)
+    assert vars(args) == default_config
+
+
 def test_parse_config_file(tmp_config_file) -> None:
     args = get_config([], tmp_config_file)
     expected = default_config.copy()

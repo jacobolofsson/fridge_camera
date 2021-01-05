@@ -9,9 +9,11 @@ def test_main(mock_worker, mock_parser) -> None:
     mock_argv = MagicMock()
     mock_tmpdir = "/this/is/a/fake/temp/path"
     with patch("fridgecamera.main.gettempdir") as mock_gettempdir:
-        mock_gettempdir.return_value = mock_tmpdir
-        main(mock_argv)
-    mock_parser.assert_called_once_with(mock_argv)
+        with patch("fridgecamera.main.Path.home") as mock_homepath:
+            mock_gettempdir.return_value = mock_tmpdir
+            main(mock_argv)
+    mock_parser.assert_called_once_with(
+        mock_argv, mock_homepath.return_value / "fridgecamera.ini")
     mock_worker.assert_called_once_with(
         mock_parser.return_value.camid,
         mock_tmpdir + "/.fridgecamera",
