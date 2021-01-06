@@ -1,4 +1,5 @@
-config.py
+# VS Code
+.vscode
 
 # MacOS specific files
 .DS_Store
