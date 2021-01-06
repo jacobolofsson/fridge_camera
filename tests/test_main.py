@@ -1,27 +1,39 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
+from fridgecamera.configuration import read_config_file
 from fridgecamera.main import main
 
 
-@patch("fridgecamera.main.get_config")
 @patch("fridgecamera.main.Worker")
-def test_main(mock_worker, mock_parser) -> None:
-    mock_argv = MagicMock()
+def test_run(mock_worker, tmp_config_file, cli_args) -> None:
     mock_tmpdir = "/this/is/a/fake/temp/path"
     with patch("fridgecamera.main.gettempdir") as mock_gettempdir:
-        with patch("fridgecamera.main.Path.home") as mock_homepath:
-            mock_gettempdir.return_value = mock_tmpdir
-            main(mock_argv)
-    mock_parser.assert_called_once_with(
-        mock_argv, mock_homepath.return_value / "fridgecamera.ini")
+        mock_gettempdir.return_value = mock_tmpdir
+        assert main(cli_args) == 0
+
     mock_worker.assert_called_once_with(
-        mock_parser.return_value.camid,
+        99,
         mock_tmpdir + "/.fridgecamera",
+        (200, 12800),
         {
-            "host": mock_parser.return_value.ftp_host,
-            "user": mock_parser.return_value.ftp_user,
-            "pass": mock_parser.return_value.ftp_pass,
-            "path": mock_parser.return_value.ftp_path
+            "host": "testhost",
+            "user": "testuser",
+            "pass": None,
+            "path": None,
         },
-        mock_parser.return_value.fps,
+        123,
     )
+    mock_worker.return_value.serve_forever.assert_called_once_with()
+
+
+@patch("fridgecamera.main.Sensor")
+def test_calibrate_existing_file(mock_sensor, tmp_config_file) -> None:
+    new_min = 123
+    new_max = 456
+    mock_sensor.return_value.readValue.side_effect = (new_min, new_max)
+    with patch("builtins.input"):
+        main(["calibrate"])
+
+    config = read_config_file(tmp_config_file)
+    assert int(config["sensor_min"]) == new_min
+    assert int(config["sensor_max"]) == new_max

@@ -1,4 +1,7 @@
+from typing import Dict, List
 from unittest.mock import MagicMock, patch
+
+import pytest
 
 # Patch HW-specific modules
 patch.dict(
@@ -11,3 +14,40 @@ patch.dict(
         "adafruit_ads1x15.analog_in": MagicMock(),
     }
 ).start()
+
+
+@pytest.fixture()
+def cli_args() -> List[str]:
+    return [
+        "-v",
+        "run",
+        "--camid",
+        "99",
+        "--fps",
+        "123",
+        "--ftp_host",
+        "testhost",
+    ]
+
+
+@pytest.fixture()
+def file_config() -> Dict[str, object]:
+    return {
+        "camid": 666,
+        "ftp_user": "testuser",
+        "sensor_min": 200,
+    }
+
+
+@pytest.fixture()
+def tmp_config_file(tmp_path, file_config):
+    content = "[DEFAULT]\n"
+    for k, v in file_config.items():
+        content += f"{k} = {v}\n"
+
+    config_file = tmp_path / "fridgecamera.ini"
+    config_file.write_text(content)
+
+    with patch("pathlib.Path.home") as mock_homepath:
+        mock_homepath.return_value = tmp_path
+        yield config_file

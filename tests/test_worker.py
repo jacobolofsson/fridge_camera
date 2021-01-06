@@ -19,6 +19,7 @@ def mock_time() -> Iterable[None]:
 def test_worker(mock_uploader, mock_sensor, mock_door, mock_camera) -> None:
     test_id = 99
     test_path = "this/is/a/test/path"
+    sensor_config = (12100, 12730)
     ftp_details = {
         "host": "testhost",
         "user": "testuser",
@@ -26,9 +27,9 @@ def test_worker(mock_uploader, mock_sensor, mock_door, mock_camera) -> None:
         "path": "testpath"
     }
     fps = 1000
-    Worker(test_id, test_path, ftp_details, fps)
+    Worker(test_id, test_path, sensor_config, ftp_details, fps)
     mock_uploader.assert_called_once_with(*ftp_details.values())
-    mock_sensor.assert_called_once_with(12100, 12730)
+    mock_sensor.assert_called_once_with(*sensor_config)
     mock_door.assert_called_once_with(mock_sensor.return_value)
     mock_camera.assert_called_once_with(test_id, test_path)
 
@@ -45,6 +46,7 @@ def worker(mock_uploader, mock_sensor, mock_door, mock_camera) -> Worker:
     return Worker(
         0,
         "test/path",
+        (0, 1),
         {
             "host": "testhost",
             "user": "testuser",
