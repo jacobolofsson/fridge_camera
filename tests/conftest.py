@@ -20,6 +20,7 @@ patch.dict(
 def cli_args() -> List[str]:
     return [
         "-v",
+        "run",
         "--camid",
         "99",
         "--fps",
@@ -47,4 +48,6 @@ def tmp_config_file(tmp_path, file_config):
     config_file = tmp_path / "fridgecamera.ini"
     config_file.write_text(content)
 
-    return config_file
+    with patch("pathlib.Path.home") as mock_homepath:
+        mock_homepath.return_value = tmp_path
+        yield config_file

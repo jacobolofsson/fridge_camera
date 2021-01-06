@@ -10,11 +10,14 @@ def parse_arguments(
     config_defaults: Dict[str, str],
 ) -> argparse.Namespace:
     parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(dest="action")
+    run_parser = subparsers.add_parser("run", help="Run fridgecamera")
+    subparsers.add_parser("calibrate", help="Calibrate door sensor")
 
     def _add_config_argument(name: str, **kwargs: Any) -> None:
         if name in config_defaults:
             kwargs["default"] = kwargs["type"](config_defaults[name])
-        parser.add_argument(f"--{name}", **kwargs)
+        run_parser.add_argument(f"--{name}", **kwargs)
 
     parser.add_argument(
         "-v",
@@ -37,9 +40,9 @@ def parse_arguments(
                          help="Path on FTP host to save the images at")
 
     _add_config_argument("sensor_min", type=int, default=12100,
-                         help="Sensor value for 0 degree door angle")
+                         help="Sensor value for open door")
     _add_config_argument("sensor_max", type=int, default=12800,
-                         help="Sensor value for 90 degree door angle")
+                         help="Sensor value for closed door")
 
     parsed = parser.parse_args(args)
     logging.getLogger(__name__).debug(
@@ -51,11 +54,13 @@ def read_config_file(config_file: Path) -> Dict[str, str]:
     parser = configparser.ConfigParser()
     parser.read(config_file)
     parsed = dict(parser["DEFAULT"])
-    logging.getLogger(__name__).debug(f"Got config from file: {parsed}")
+    logging.getLogger(__name__).debug(
+        f"Got config from file ({config_file}): {parsed}")
     return parsed
 
 
 def update_config_file(config: Dict[str, str], config_file: Path) -> None:
+    logging.getLogger(__name__).debug(f"Updating {config_file} with: {config}")
     current = read_config_file(config_file)
     current.update(config)
     parser = configparser.ConfigParser(current)

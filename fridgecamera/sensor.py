@@ -18,10 +18,15 @@ class Sensor():
         i2c = busio.I2C(board.SCL, board.SDA)
         self.sensor = ADS1115(i2c)
 
-    def readAngle(self) -> float:
+    def readValue(self) -> int:
         chan = AnalogIn(self.sensor, P0)
-        angle = self._valueToAngle(chan.value)
-        self.logger.debug(f"Angle: {angle} Value: {chan.value}")
+        value: int = chan.value
+        self.logger.debug(f"Value: {value}")
+        return value
+
+    def readAngle(self) -> float:
+        angle = self._valueToAngle(self.readValue())
+        self.logger.debug(f"Angle: {angle}")
         return angle
 
     def _valueToAngle(self, value: int) -> float:
