@@ -2,7 +2,7 @@ import argparse
 import logging
 import pathlib
 import tempfile
-from typing import List
+from typing import List, Optional
 
 from fridgecamera.configuration import get_config, update_config_file
 from fridgecamera.lock import FileLock
@@ -44,7 +44,7 @@ def calibrate(args: argparse.Namespace) -> None:
                         "sensor_max": str(max_val)}, ini_file_path())
 
 
-def main(str_args: List[str]) -> int:
+def main(str_args: Optional[List[str]] = None) -> int:
     args = get_config(str_args, ini_file_path())
 
     logger = logging.getLogger("fridgecamera")
