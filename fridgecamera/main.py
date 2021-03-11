@@ -1,5 +1,6 @@
 import argparse
 import logging
+import logging.handlers
 import pathlib
 import tempfile
 from typing import List
@@ -48,10 +49,22 @@ def main(str_args: List[str]) -> int:
     args = get_config(str_args, ini_file_path())
 
     logger = logging.getLogger("fridgecamera")
-    logger.addHandler(logging.StreamHandler())
-    logger.setLevel(
+
+    log_stream = logging.StreamHandler()
+    log_stream.setLevel(
         logging.DEBUG if args.verbose else logging.INFO
     )
+    logger.addHandler(log_stream)
+
+    log_file = logging.handlers.RotatingFileHandler(
+        filename=args.log_file,
+        maxBytes=5 * 1024,
+        backupCount=5,
+    )
+    log_file.setFormatter(logging.Formatter(
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
+    log_file.setLevel(logging.DEBUG)
+    logger.addHandler(log_file)
 
     if args.action == "run":
         logger.info("Starting fridge camera")

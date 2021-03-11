@@ -1,3 +1,5 @@
+import pathlib
+
 from fridgecamera.configuration import get_config, update_config_file
 
 default_config = {
@@ -11,6 +13,7 @@ default_config = {
     "ftp_user": None,
     "ftp_pass": None,
     "ftp_path": None,
+    "log_file": pathlib.Path.home() / "fridgecamera.log"
 }
 
 cli_config = {
