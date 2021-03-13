@@ -5,6 +5,7 @@ import tempfile
 from typing import List
 
 from fridgecamera.configuration import get_config, update_config_file
+from fridgecamera.lock import FileLock
 from fridgecamera.sensor import Sensor
 from fridgecamera.worker import Worker
 
@@ -62,6 +63,11 @@ def main(str_args: List[str]) -> int:
         logger.error(f"Unknown action: {args.action}")
         return -2
 
+    lock = FileLock()
+    if not lock.acquire():
+        logger.error("Instance of program is already running")
+        return -3
+
     try:
         action(args)
     except KeyboardInterrupt:
@@ -69,6 +75,8 @@ def main(str_args: List[str]) -> int:
     except Exception:
         logger.exception("An unhandled exception occurend!")
         return -1
+    finally:
+        lock.release()
 
     logger.info("Shutting down fridge camera")
     return 0
