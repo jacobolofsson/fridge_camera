@@ -1,7 +1,7 @@
 import datetime
 import logging
-import os
-from typing import TYPE_CHECKING, Tuple
+import pathlib
+from typing import TYPE_CHECKING
 
 import cv2
 import numpy
@@ -51,7 +51,7 @@ class Image:
 
 
 class Camera:
-    def __init__(self, camID: int, imageFolderPath: str) -> None:
+    def __init__(self, camID: int, imageFolderPath: pathlib.Path) -> None:
         self.camera = cv2.VideoCapture(camID)
         self.imgFolder = imageFolderPath
         self.hasUnstoredImg = False
@@ -63,18 +63,20 @@ class Camera:
         self.currentImage = Image(frame, angle)
         self.hasUnstoredImg = True
 
-    def storePictureAsFile(self) -> Tuple[str, str]:
+    def storePictureAsFile(self) -> pathlib.Path:
         # The last image in the list is always the latest
         imgname = self.currentImage.getFilename()
         self.logger.info(f"Storing picture {imgname} at: {self.imgFolder}")
-        cv2.imwrite(
-            os.path.join(
-                self.imgFolder,
-                imgname,
-            ),
-            self.currentImage.image)
+
+        if not self.imgFolder.exists():
+            self.imgFolder.mkdir(parents=True)
+
+        imgPath = self.imgFolder / imgname
+        if not cv2.imwrite(str(imgPath), self.currentImage.image):
+            raise RuntimeError(f"Failed to write picture to disk: {imgPath}")
+
         self.hasUnstoredImg = False
-        return self.imgFolder, imgname
+        return imgPath
 
     def hasUnstoredPicture(self) -> bool:
         return self.hasUnstoredImg

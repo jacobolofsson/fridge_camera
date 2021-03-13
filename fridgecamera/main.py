@@ -1,8 +1,7 @@
 import argparse
 import logging
-import os
 import pathlib
-from tempfile import gettempdir
+import tempfile
 from typing import List
 
 from fridgecamera.configuration import get_config, update_config_file
@@ -17,7 +16,7 @@ def ini_file_path() -> pathlib.Path:
 def run(args: argparse.Namespace) -> None:
     worker = Worker(
         args.camid,
-        os.path.join(gettempdir(), ".fridgecamera"),
+        pathlib.Path(tempfile.gettempdir()) / ".fridgecamera",
         (args.sensor_min, args.sensor_max),
         {
             "host": args.ftp_host,

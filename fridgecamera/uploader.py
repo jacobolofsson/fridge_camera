@@ -1,6 +1,6 @@
 import ftplib
 import logging
-import os
+import pathlib
 
 
 class Uploader:
@@ -11,16 +11,16 @@ class Uploader:
         self.passwd = passwd
         self.path = path
 
-    def upload(self, filepath: str, filename: str) -> None:
+    def upload(self, path: pathlib.Path) -> None:
         self.logger.info(
-            f"Uploading to path: '{filepath}', filename: '{filename}'"
+            f"Uploading '{path}'"
         )
         # Open and close FTP connection for each transfer.
         # Might be a long time between transmissions.
         ftps = ftplib.FTP(host=self.host)
         ftps.login(user=self.user, passwd=self.passwd)
         ftps.cwd(self.path)
-        with open(os.path.join(filepath, filename), 'rb') as image_fd:
+        with path.open(mode='rb') as image_fd:
             # Use same file name at destination as source
-            ftps.storbinary('STOR ' + filename, image_fd)
+            ftps.storbinary('STOR ' + str(path.name), image_fd)
             ftps.quit()

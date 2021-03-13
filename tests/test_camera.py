@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Iterable
 from unittest.mock import MagicMock, patch
 
@@ -6,7 +7,7 @@ import pytest
 from fridgecamera.fridge import Camera
 
 TEST_CAM_ID = 999
-TEST_PATH = "this/path/does/not/exist"
+TEST_PATH = Path("this/path/does/not/exist")
 
 
 def test_cam_id() -> None:
@@ -16,10 +17,10 @@ def test_cam_id() -> None:
 
 
 @pytest.fixture()
-def camera() -> Iterable[Camera]:
+def camera(tmp_path) -> Iterable[Camera]:
     with patch("cv2.VideoCapture") as mock_camera:
         mock_camera.return_value.read.return_value = (MagicMock(), MagicMock())
-        yield Camera(TEST_CAM_ID, TEST_PATH)
+        yield Camera(TEST_CAM_ID, tmp_path)
 
 
 def test_unstored_picture(camera: Camera) -> None:
@@ -41,7 +42,7 @@ def test_take_picture(camera: Camera) -> None:
     mock_img.assert_called_once_with(frame, test_angle)
 
 
-def test_store_picture(camera: Camera) -> None:
+def test_store_picture(camera: Camera, tmp_path: Path) -> None:
     mock_filename = "test_filename.jpg"
 
     with patch("fridgecamera.fridge.Image") as mock_img:
@@ -50,12 +51,11 @@ def test_store_picture(camera: Camera) -> None:
     mock_img.return_value.getFilename.return_value = mock_filename
 
     with patch("cv2.imwrite") as mock_imwrite:
-        folder, filename = camera.storePictureAsFile()
+        filename = camera.storePictureAsFile()
 
     mock_imwrite.assert_called_once_with(
-        f"{TEST_PATH}/{mock_filename}", mock_img.return_value.image,
+        f"{tmp_path}/{mock_filename}", mock_img.return_value.image,
     )
 
-    assert folder == TEST_PATH
-    assert filename == mock_filename
+    assert filename == tmp_path / mock_filename
     assert not camera.hasUnstoredPicture()

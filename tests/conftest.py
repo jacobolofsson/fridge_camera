@@ -40,14 +40,29 @@ def file_config() -> Dict[str, object]:
 
 
 @pytest.fixture()
-def tmp_config_file(tmp_path, file_config):
+def tmp_config_file(mock_home_dir, file_config):
     content = "[DEFAULT]\n"
     for k, v in file_config.items():
         content += f"{k} = {v}\n"
 
-    config_file = tmp_path / "fridgecamera.ini"
+    config_file = mock_home_dir / "fridgecamera.ini"
     config_file.write_text(content)
+    return config_file
 
-    with patch("pathlib.Path.home") as mock_homepath:
-        mock_homepath.return_value = tmp_path
-        yield config_file
+
+@pytest.fixture(autouse=True)
+def mock_home_dir(tmp_path):
+    path = tmp_path / "mock_home"
+    path.mkdir()
+    with patch("pathlib.Path.home") as mock_home:
+        mock_home.return_value = path
+        yield path
+
+
+@pytest.fixture(autouse=True)
+def mock_tmp_dir(tmp_path):
+    path = tmp_path / "mock_temp"
+    path.mkdir()
+    with patch("tempfile.gettempdir") as mock_tmpdir:
+        mock_tmpdir.return_value = str(path)
+        yield path
