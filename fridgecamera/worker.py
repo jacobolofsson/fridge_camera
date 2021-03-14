@@ -1,3 +1,4 @@
+import pathlib
 import time
 from typing import Dict, Tuple
 
@@ -10,7 +11,7 @@ class Worker:
     def __init__(
         self,
         camid: int,
-        imgpath: str,
+        imgpath: pathlib.Path,
         sensor_config: Tuple[int, int],
         ftp_details: Dict[str, str],
         fps: int
@@ -37,7 +38,7 @@ class Worker:
         # Wait until door is closed to send image, to prevent unnecesary
         # uploads
         elif(self.door.isClosed() and self.camera.hasUnstoredPicture()):
-            path, filename = self.camera.storePictureAsFile()
-            self.uploader.upload(path, filename)
+            imgPath = self.camera.storePictureAsFile()
+            self.uploader.upload(imgPath)
 
         time.sleep(1 / self.fps)

@@ -1,5 +1,5 @@
 from typing import Iterable
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -16,9 +16,15 @@ def mock_time() -> Iterable[None]:
 @patch("fridgecamera.worker.Door")
 @patch("fridgecamera.worker.Sensor")
 @patch("fridgecamera.worker.Uploader")
-def test_worker(mock_uploader, mock_sensor, mock_door, mock_camera) -> None:
+def test_worker(
+    mock_uploader,
+    mock_sensor,
+    mock_door,
+    mock_camera,
+    tmp_path,
+) -> None:
     test_id = 99
-    test_path = "this/is/a/test/path"
+    test_path = tmp_path
     sensor_config = (12100, 12730)
     ftp_details = {
         "host": "testhost",
@@ -39,13 +45,16 @@ def test_worker(mock_uploader, mock_sensor, mock_door, mock_camera) -> None:
 @patch("fridgecamera.worker.Door")
 @patch("fridgecamera.worker.Sensor")
 @patch("fridgecamera.worker.Uploader")
-def worker(mock_uploader, mock_sensor, mock_door, mock_camera) -> Worker:
-    # Ser return value to tuple, otherwise it will fail to unpack
-    mock_camera.return_value.storePictureAsFile.return_value = (
-        MagicMock(), MagicMock())
+def worker(
+    mock_uploader,
+    mock_sensor,
+    mock_door,
+    mock_camera,
+    tmp_path,
+) -> Worker:
     return Worker(
         0,
-        "test/path",
+        tmp_path,
         (0, 1),
         {
             "host": "testhost",
@@ -96,4 +105,4 @@ def test_worker_serve_closed_with_picture(worker) -> None:
     worker.camera.takePicture.assert_not_called()
     worker.camera.storePictureAsFile.assert_called_once_with()
     worker.uploader.upload.assert_called_once_with(
-        *worker.camera.storePictureAsFile.return_value)
+        worker.camera.storePictureAsFile.return_value)

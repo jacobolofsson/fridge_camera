@@ -1,11 +1,11 @@
 import argparse
 import logging
-import os
 import pathlib
-from tempfile import gettempdir
+import tempfile
 from typing import List
 
 from fridgecamera.configuration import get_config, update_config_file
+from fridgecamera.lock import FileLock
 from fridgecamera.sensor import Sensor
 from fridgecamera.worker import Worker
 
@@ -17,7 +17,7 @@ def ini_file_path() -> pathlib.Path:
 def run(args: argparse.Namespace) -> None:
     worker = Worker(
         args.camid,
-        os.path.join(gettempdir(), ".fridgecamera"),
+        pathlib.Path(tempfile.gettempdir()) / ".fridgecamera",
         (args.sensor_min, args.sensor_max),
         {
             "host": args.ftp_host,
@@ -63,6 +63,11 @@ def main(str_args: List[str]) -> int:
         logger.error(f"Unknown action: {args.action}")
         return -2
 
+    lock = FileLock()
+    if not lock.acquire():
+        logger.error("Instance of program is already running")
+        return -3
+
     try:
         action(args)
     except KeyboardInterrupt:
@@ -70,6 +75,8 @@ def main(str_args: List[str]) -> int:
     except Exception:
         logger.exception("An unhandled exception occurend!")
         return -1
+    finally:
+        lock.release()
 
     logger.info("Shutting down fridge camera")
     return 0

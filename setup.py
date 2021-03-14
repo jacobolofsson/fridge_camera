@@ -8,7 +8,7 @@ setuptools.setup(
     author_email='jacob@jacobolofsson.se',
     description='I want to be able to check the content of my fridge online',
     packages=setuptools.find_packages(),
-    install_requires=["opencv-python"],
+    install_requires=["opencv-python", "psutil"],
     extras_require={"hardware_access": [
         "adafruit-circuitpython-ads1x15",
     ]},
