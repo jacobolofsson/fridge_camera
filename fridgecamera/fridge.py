@@ -68,8 +68,8 @@ class Camera:
         imgname = self.currentImage.getFilename()
         self.logger.info(f"Storing picture {imgname} at: {self.imgFolder}")
 
-        if not self.imgFolder.exists():
-            self.imgFolder.mkdir(parents=True)
+        # Make sure cv2 dont fail because directory doesn't exist
+        self.imgFolder.mkdir(parents=True, exist_ok=True)
 
         imgPath = self.imgFolder / imgname
         if not cv2.imwrite(str(imgPath), self.currentImage.image):
