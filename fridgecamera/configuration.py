@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Optional
 
 
 def parse_arguments(
-    args: List[str],
+    args: Optional[List[str]],
     config_defaults: Dict[str, str],
 ) -> argparse.Namespace:
     logger = logging.getLogger(__name__)
@@ -79,7 +79,7 @@ def update_config_file(config: Dict[str, str], config_file: Path) -> None:
 
 
 def get_config(
-    cli_str: List[str],
+    cli_str: Optional[List[str]],
     config_file: Optional[Path] = None,
 ) -> argparse.Namespace:
     config = read_config_file(config_file) if config_file else {}
