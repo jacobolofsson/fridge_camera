@@ -49,6 +49,7 @@ def main(str_args: Optional[List[str]] = None) -> int:
     args = get_config(str_args, ini_file_path())
 
     logger = logging.getLogger("fridgecamera")
+    logger.setLevel(logging.DEBUG)
 
     log_stream = logging.StreamHandler()
     log_stream.setLevel(
