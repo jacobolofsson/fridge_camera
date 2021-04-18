@@ -2,19 +2,22 @@ import pathlib
 
 from fridgecamera.configuration import get_config, update_config_file
 
-default_config = {
-    "action": "run",
-    "verbose": False,
-    "camid": 0,
-    "fps": 2,
-    "sensor_max": 12800,
-    "sensor_min": 12100,
-    "ftp_host": None,
-    "ftp_user": None,
-    "ftp_pass": None,
-    "ftp_path": None,
-    "log_file": pathlib.Path.home() / "fridgecamera.log"
-}
+
+def default_config():
+    return {
+        "action": "run",
+        "verbose": False,
+        "camid": 0,
+        "fps": 2,
+        "sensor_max": 12800,
+        "sensor_min": 12100,
+        "ftp_host": None,
+        "ftp_user": None,
+        "ftp_pass": None,
+        "ftp_path": None,
+        "log_file": pathlib.Path.home() / "fridgecamera.log"
+    }
+
 
 cli_config = {
     "verbose": True,
@@ -26,12 +29,12 @@ cli_config = {
 
 def test_default_args() -> None:
     args = get_config(["run"])
-    assert vars(args) == default_config
+    assert vars(args) == default_config()
 
 
 def test_parse_args(cli_args) -> None:
     args = get_config(cli_args)
-    expected = default_config.copy()
+    expected = default_config()
     expected.update(cli_config)
     assert vars(args) == expected
 
@@ -39,19 +42,19 @@ def test_parse_args(cli_args) -> None:
 def test_no_config_file(tmp_path) -> None:
     non_existing_file_path = tmp_path / "fridgecamera.ini"
     args = get_config(["run"], non_existing_file_path)
-    assert vars(args) == default_config
+    assert vars(args) == default_config()
 
 
 def test_parse_config_file(tmp_config_file, file_config) -> None:
     args = get_config(["run"], tmp_config_file)
-    expected = default_config.copy()
+    expected = default_config()
     expected.update(file_config)
     assert vars(args) == expected
 
 
 def test_parse_args_with_file(tmp_config_file, file_config, cli_args) -> None:
     args = get_config(cli_args, tmp_config_file)
-    expected = default_config.copy()
+    expected = default_config()
     expected.update(file_config)
     expected.update(cli_config)
     assert vars(args) == expected

@@ -2,11 +2,16 @@ import logging
 import os
 import pathlib
 import tempfile
+import threading
+import typing
 
 import psutil
 
 
 class FileLock:
+    _lock_counter = 0
+    _global_lock = threading.Lock()
+
     def __init__(self) -> None:
         self._lockfile = pathlib.Path(
             tempfile.gettempdir()) / "fridgecamera.lock"
@@ -17,10 +22,19 @@ class FileLock:
             raise RuntimeError(
                 f"Failed to acquire file lock on: {self._lockfile}")
 
-    def __exit__(self) -> None:
+    def __exit__(self, *_: typing.Any) -> None:
         self.release()
 
     def acquire(self) -> bool:
+        with FileLock._global_lock:
+            acquired = self._create_lockfile()
+            self._logger.debug(
+                f"Lock file acquired: {acquired} (currently {FileLock._lock_counter} locks)")
+            if acquired:
+                FileLock._lock_counter += 1
+            return acquired
+
+    def _create_lockfile(self) -> bool:
         if self._lockfile.exists():
             pid = int(self._lockfile.read_text())
             self._logger.debug(f"Found lockfile with PID: {pid}")
@@ -53,6 +67,11 @@ class FileLock:
         return True
 
     def release(self) -> None:
-        if self._lockfile.exists() and self._lockfile.read_text() == str(os.getpid()):
-            self._lockfile.unlink()
-            self._logger.debug("Removing lock file")
+        with FileLock._global_lock:
+            if self._lockfile.exists() and self._lockfile.read_text() == str(os.getpid()):
+                self._logger.debug(f"Lockfile exists (currently {FileLock._lock_counter} locks)")
+                FileLock._lock_counter -= 1
+                if FileLock._lock_counter <= 0:
+                    self._logger.debug("Removing lock file")
+                    self._lockfile.unlink()
+                self._logger.debug("Released lock")
