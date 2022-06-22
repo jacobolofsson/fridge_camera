@@ -4,7 +4,7 @@
 #
 #    pip-compile
 #
-numpy==1.19.4
+numpy==1.22.0
     # via opencv-python
 opencv-python==4.4.0.46
     # via fridgecamera (setup.py)
